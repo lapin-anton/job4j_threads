@@ -2,6 +2,7 @@ package ru.job4j.thread;
 
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
@@ -23,20 +24,26 @@ public class Wget implements Runnable {
              FileOutputStream out = new FileOutputStream(output)) {
             byte[] dataBuffer = new byte[1024];
             int bytesRead;
-            while (true) {
-                long start = System.currentTimeMillis();
-                bytesRead = in.read(dataBuffer, 0, 1024);
-                if (bytesRead == -1) {
-                    break;
-                }
+            long bytesWrited = 0;
+            long finish;
+            long diffTime;
+            long start = System.currentTimeMillis();
+            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
                 out.write(dataBuffer, 0, bytesRead);
-                long finish = System.currentTimeMillis();
-                long uploadTime = finish - start;
-                if (finish - start < speed) {
-                    Thread.sleep(speed - uploadTime);
+                bytesWrited += bytesRead;
+                if (bytesWrited >= speed) {
+                    finish = System.currentTimeMillis();
+                    diffTime = finish - start;
+                    if (diffTime < 1000) {
+                        Thread.sleep(1000 - diffTime);
+                    }
+                    start = System.currentTimeMillis();
+                    bytesWrited = 0;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
