@@ -15,7 +15,7 @@ public final class ParseFile {
         return file;
     }
 
-    public String getContent(Predicate<Integer> condition) throws IOException {
+    private String content(Predicate<Integer> condition) throws IOException {
         String output = "";
         try (BufferedInputStream i = new BufferedInputStream(new FileInputStream(file))) {
             int data;
@@ -26,6 +26,14 @@ public final class ParseFile {
             }
         }
         return output;
+    }
+
+    public String getContent() throws IOException {
+        return content(data -> true);
+    }
+
+    public String getContentWithoutUnicode() throws IOException {
+        return content(data -> data < 0x80);
     }
 
 }
